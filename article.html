@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết bài viết - Dân Trí</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .article-detail { background: #fff; padding: 30px; border-radius: 6px; margin: 25px 0; min-height: 400px; }
+    .article-detail h1 { font-size: 28px; color: #111; margin-bottom: 15px; line-height: 1.3; }
+    .article-detail .meta { font-size: 14px; color: #666; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+    .article-detail img { width: 100%; max-height: 480px; object-fit: cover; border-radius: 6px; margin-bottom: 20px; }
+    .article-detail .sapo-detail { font-weight: bold; font-size: 18px; color: #444; margin-bottom: 20px; line-height: 1.6; }
+    .article-detail .content { font-size: 17px; line-height: 1.8; color: #222; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav-bar">
+      <a href="index.html" class="logo">DÂN TRÍ</a>
+      <ul class="nav-menu" id="nav-menu"></ul>
+    </div>
+  </header>
+
+  <main class="container">
+    <article class="article-detail" id="article-detail">
+      <p style="text-align: center; color: #888;">Đang tải nội dung bài viết...</p>
+    </article>
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <h4>Báo Dân Trí</h4>
+        <p>Trang tin tức tổng hợp cập nhật nhanh chóng, chính xác.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Liên kết nhanh</h4>
+        <ul>
+          <li><a href="index.html">Trang chủ</a></li>
+          <li><a href="index.html?cat=latest">Tin mới</a></li>
+          <li><a href="crawler.html">Công cụ Crawler</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Liên hệ</h4>
+        <p>Email: toasoan@dantri.com.vn</p>
+      </div>
+      <div class="footer-col">
+        <h4>Mạng xã hội</h4>
+        <p>Facebook | YouTube | TikTok</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Bản quyền thuộc về Báo Dân Trí.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Render Menu
+      const categoriesData = JSON.parse(localStorage.getItem('categories')) || {
+        "menu": [
+          { "id": "home", "title": "Home" },
+          { "id": "dt360", "title": "Dân trí 360" },
+          { "id": "latest", "title": "Mới nhất" },
+          { "id": "the-gioi", "title": "Thế giới" },
+          { "id": "thoi-su", "title": "Thời sự" }
+        ]
+      };
+
+      const menuList = categoriesData.menu || categoriesData;
+      const navMenu = document.getElementById('nav-menu');
+      if (navMenu) {
+        navMenu.innerHTML = menuList.map(cat => `
+          <li><a href="index.html?cat=${cat.id}">${cat.title}</a></li>
+        `).join('') + '<li><a href="crawler.html" style="color:red; font-weight:bold;">Crawler Page</a></li>';
+      }
+
+      // 2. Lấy tham số ID từ URL (?id=...)
+      const urlParams = new URLSearchParams(window.location.search);
+      const postId = urlParams.get('id');
+
+      // 3. Lấy dữ liệu bài viết từ LocalStorage do index.html đã lưu
+      const posts = JSON.parse(localStorage.getItem('posts')) || [];
+      const post = posts.find(p => p.id === postId) || posts[0];
+
+      const detailContainer = document.getElementById('article-detail');
+
+      if (!post) {
+        detailContainer.innerHTML = '<h2 style="text-align:center; padding: 50px 0;">Bài viết không tồn tại hoặc đã bị xóa!</h2>';
+        return;
+      }
+
+      // Xử lý hiển thị tác giả
+      let authorName = "Ban Biên Tập";
+      if (post.author) {
+        authorName = typeof post.author === 'object' ? (post.author.name || "Ban Biên Tập") : post.author;
+      }
+
+      // Xử lý hiển thị chuyên mục
+      let catName = post.category || "Tin tức";
+      if (Array.isArray(catName)) catName = catName.join(', ');
+
+      // 4. Render chi tiết bài viết
+      detailContainer.innerHTML = `
+        <h1>${post.title}</h1>
+        <div class="meta">
+          Chuyên mục: <strong>${catName}</strong> | 
+          Tác giả: <strong>${authorName}</strong> | 
+          Ngày đăng: <span>${post.publishedAt || "Mới cập nhật"}</span>
+        </div>
+        ${post.image ? `<img src="${post.image}" alt="${post.title}">` : ''}
+        ${post.excerpt ? `<div class="sapo-detail">${post.excerpt}</div>` : ''}
+        <div class="content">
+          <p>${post.content || post.excerpt || "Nội dung chi tiết đang được cập nhật..."}</p>
+        </div>
+      `;
+    });
+  </script>
+</body>
+</html>
